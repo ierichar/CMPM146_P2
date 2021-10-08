@@ -1,7 +1,8 @@
-
 from mcts_node import MCTSNode
 from random import choice
 from math import sqrt, log
+
+import p2_t3
 
 num_nodes = 1000
 explore_faction = 2.
@@ -33,30 +34,46 @@ def expand_leaf(node, board, state):
     Returns:    The added child node.
 
     """
-    pass
+    # Select a random_action from untried_actions
+    random_action = choice(node.untried_actions)
+    new_node = MCTSNode(parent=node, parent_action=random_action, action_list=board.legal_actions(state))
+    node.child_nodes[random_action] = new_node
+    new_node.parent = node
+    return new_node
     # Hint: return new_node
 
 
 def rollout(board, state):
     """ Given the state of the game, the rollout plays out the remainder randomly.
-
+        Example Heuristics:
+            -   Always connect third X/0 if possible
+            -   Always block third X/0 if possible
     Args:
         board:  The game setup.
         state:  The state of the game.
 
     """
-    pass
+    while not board.is_ended(state):
+        random_action = choice(board.legal_actions(state))
+        board.next_state(state, random_action)
+    return board.win_values(state)
+
 
 
 def backpropagate(node, won):
     """ Navigates the tree from a leaf node to the root, updating the win and visit count of each node along the path.
-
+        Backpropagate recursively
     Args:
         node:   A leaf node.
         won:    An indicator of whether the bot won or lost the game.
 
     """
-    pass
+    if node.parent is None:
+        return
+    node.wins += won
+    node.visit += 1
+    backpropagate(node.parent, won)
+
 
 
 def think(board, state):
@@ -80,6 +97,7 @@ def think(board, state):
         node = root_node
 
         # Do MCTS - This is all you!
+        
 
     # Return an action, typically the most frequently used action (from the root) or the action with the best
     # estimated win rate.
