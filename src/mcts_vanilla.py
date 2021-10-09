@@ -1,6 +1,6 @@
 from mcts_node import MCTSNode
 from random import choice
-from math import sqrt, log
+from math import e, sqrt, log
 
 import p2_t3
 
@@ -19,7 +19,25 @@ def traverse_nodes(node, board, state, identity):
     Returns:        A node from which the next stage of the search can proceed.
 
     """
-    pass
+    max_uct_value = None
+    leaf_found = False
+    for child_node in node.child_nodes and leaf_found == False:
+        if not child_node.child_nodes:
+            leaf_found = True
+        else:
+            # Upper Confidence Bounds for Trees (UCT)
+            # w_i / n_i + c * sqrt( ln(t)/ n_i )
+            uct_value = ( child_node.wins/child_node.visits ) + explore_faction * (sqrt( log(node.visits, e)/ child_node.visits))
+            
+            # Find the maximum UCT value amongst current node's children
+            if max_uct_value == None:
+                uct_value = max_uct_value
+            else:
+                if uct_value > max_uct_value:
+                    max_uct_value = uct_value
+
+
+    return child_node
     # Hint: return leaf_node
 
 
@@ -97,7 +115,16 @@ def think(board, state):
         node = root_node
 
         # Do MCTS - This is all you!
-        
+        # Selection
+        leaf = traverse_nodes(node, board, sampled_game, identity_of_bot)
+        # Expansion
+        expand_leaf(leaf, board, sampled_game)
+        # Simulation
+        won = rollout(board, sampled_game)
+        # Backpropagation
+        backpropagate(leaf, won)
+
+
 
     # Return an action, typically the most frequently used action (from the root) or the action with the best
     # estimated win rate.
