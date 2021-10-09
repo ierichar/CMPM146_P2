@@ -19,22 +19,27 @@ def traverse_nodes(node, board, state, identity):
     Returns:        A node from which the next stage of the search can proceed.
 
     """
-    max_uct_value = None
-    leaf_found = False
-    for child_node in node.child_nodes and leaf_found == False:
-        if not child_node.child_nodes:
-            leaf_found = True
+    # Go first
+    if identity is 'red':
+        if node.child_nodes.empty():
+            return node
         else:
-            # Upper Confidence Bounds for Trees (UCT)
-            # w_i / n_i + c * sqrt( ln(t)/ n_i )
-            uct_value = ( child_node.wins/child_node.visits ) + explore_faction * (sqrt( log(node.visits, e)/ child_node.visits))
-            
-            # Find the maximum UCT value amongst current node's children
-            if max_uct_value == None:
-                uct_value = max_uct_value
-            else:
-                if uct_value > max_uct_value:
-                    max_uct_value = uct_value
+            for child_node in node.child_nodes:
+                max_uct_value = None
+                # Upper Confidence Bounds for Trees (UCT)
+                # w_i / n_i + c * sqrt( ln(t)/ n_i )
+                uct_value = ( child_node.wins/child_node.visits ) + explore_faction * (sqrt( log(node.visits, e)/ child_node.visits))
+                
+                # Find the maximum UCT value amongst current node's children
+                if max_uct_value == None:
+                    uct_value = max_uct_value
+                else:
+                    if uct_value > max_uct_value:
+                        max_uct_value = uct_value
+    # Go second
+    else:
+        # Play for minimum
+        return None
 
 
     return child_node
@@ -57,6 +62,7 @@ def expand_leaf(node, board, state):
     new_node = MCTSNode(parent=node, parent_action=random_action, action_list=board.legal_actions(state))
     node.child_nodes[random_action] = new_node
     new_node.parent = node
+
     return new_node
     # Hint: return new_node
 
@@ -74,6 +80,7 @@ def rollout(board, state):
     while not board.is_ended(state):
         random_action = choice(board.legal_actions(state))
         board.next_state(state, random_action)
+
     return board.win_values(state)
 
 
