@@ -266,3 +266,12 @@ def think(board, state):
     # Return an action, typically the most frequently used action (from the root) or the action with the best
     # estimated win rate.
     return best
+
+def get_state_from_path(board, state, path_list):
+    # The current state based off of the path_list
+    final_state = state
+    while len(path_list) > 0:
+        action = path_list.pop(len(path_list) - 1)
+        final_state = board.next_state(final_state, action)
+
+    return final_state
