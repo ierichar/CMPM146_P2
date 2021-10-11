@@ -22,9 +22,9 @@ def traverse_nodes(node, board, state, identity):
     # Testing Purposes ==================================================
     print('Running Traverse: (bode, board, state, identity)')
     # print('Node: ', node, '\n')
-    print('Board: ', board, '\n')
-    print('State: ', state, '\n')
-    print('Identity: ', identity, '\n')
+    # print('Board: ', board, '\n')
+    # print('State: ', state, '\n')
+    # print('Identity: ', identity, '\n')
     # END ===============================================================
 
     # Stack is used to keep track of children needed to check
@@ -96,9 +96,7 @@ def traverse_nodes(node, board, state, identity):
         print('\n', 'Pushing to stack completed', '\n')
 
     # Return None here as finishing the loop means no leafs remain.
-    # return None
-    pass
-
+    return None
 
 
 def expand_leaf(node, board, state):
@@ -116,8 +114,8 @@ def expand_leaf(node, board, state):
     # Testing Purposes ==================================================
     print('Running Expand: (node, board, state)')
     # print('Node: ', node, '\n')
-    print('Board: ', board, '\n')
-    print('State: ', state, '\n')
+    # print('Board: ', board, '\n')
+    # print('State: ', state, '\n')
     # END ===============================================================
 
     # Obtaining a random action from the given node
