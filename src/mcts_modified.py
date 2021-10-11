@@ -339,26 +339,55 @@ def get_state_from_path(board, state, path_list):
 def find_wins(board, state):
     ownership = board.owned_boxes(state) # [][] -> 1, 2, 0
     current_player = board.current_player(state)
-    p1 = []
-    p2 = []
-    blocks = {}
-    # Adds ownership to boxes
-    for x in range(3):
-        for y in range(3):
-            if (ownership[x][y] == 1):
-                p1.append((x, y))
-            elif (ownership[x][y] == 2):
-                p2.append((x, y))
-            
-    if len(p1) > 1:
-        for index in range(len(p1) - 2): # (x, y)
-            box = p1[index]
-            for index2 in range(len(p1) - 1 - index):
-                box2 = p1[index + 1]
+    # Scratch Work !!!
+    # box1 = None
+    # box2 = None
+    # for x in range(3):
+    #     for y in range(3):
+    #         if (ownership[x][y] == 1):
+    #             box1 = x, y
+    # for x in range(3):
+    #     for y in range(3):
+    #         if (ownership[x][y] == 1):
+    #             box2 = x, y
+    #                 if box1 != None and box2 != None:
+    #                     if box1[0] == box2[0]:
+    #                         if box1[1] + box2[1] == 1:
+    #                             return box1[0], 2
+    #                         elif box1[1] + box2[1] == 2:
+    #                             return box1[0], 1
+    #                         else:
+    #                             return box1[0], 0
+    #                     elif box1[1] == box2[1]:
+    #                         if box1[0] + box2[0] == 1:
+    #                             return 2, box1[1]
+    #                         elif box1[0] + box2[0] == 2:
+    #                             return 1, box1[1]
+    #                         else:
+    #                             return 0, box1[1]
+    #                     else:
+    #                         if box1 == (2, 0):
 
-    if len(p2) > 1:
-        for box in p1: # (x, y)
-            continue
+    # p1 = []
+    # p2 = []
+    # blocks = {}
+    # # Adds ownership to boxes
+    # for x in range(3):
+    #     for y in range(3):
+    #         if (ownership[x][y] == 1):
+    #             p1.append((x, y))
+    #         elif (ownership[x][y] == 2):
+    #             p2.append((x, y))
+            
+    # if len(p1) > 1:
+    #     for index in range(len(p1) - 2): # (x, y)
+    #         box = p1[index]
+    #         for index2 in range(len(p1) - 1 - index):
+    #             box2 = p1[index + 1]
+
+    # if len(p2) > 1:
+    #     for box in p1: # (x, y)
+    #         continue
     pass
 
 def find_blocks(board, state):
