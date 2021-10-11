@@ -249,21 +249,20 @@ def think(board, state):
 
     # Selecting the best action
     best = None # (node)
-    for key in node.child_nodes.keys():
+    for key in root_node.child_nodes.keys():
         # Getting action data
-        next_state = node.child_nodes[key]
-        print(key)
+        next_node = root_node.child_nodes[key]
 
         # Comparing values and assigned new best if applicable
         if not best:
-            best = next_state
-        elif (best.wins < next_state.wins):
-            best = next_state
-        elif ((best.wins == next_state.wins) and (best.visits < next_state.visits)):
-            best = next_state
-    # Return an action, typically the most frequently used action (from the root) or the action with the best
-    # estimated win rate.
-    return best
+            best = next_node
+        elif (best.wins < next_node.wins):
+            best = next_node
+        elif ((best.wins == next_node.wins) and (best.visits < next_node.visits)):
+            best = next_node
+
+    print("Vanilla bot is picking...", best.parent_action)
+    return best.parent_action
 
 def get_state_from_path(board, state, path_list):
     # The current state based off of the path_list
