@@ -254,6 +254,7 @@ def think(board, state):
     """
     identity_of_bot = board.current_player(state)
     root_node = MCTSNode(parent=None, parent_action=None, action_list=board.legal_actions(state))
+    print('Action selection list', root_node.untried_actions)
 
     value_dictionary = {}
     for step in range(num_nodes):
@@ -286,8 +287,23 @@ def think(board, state):
 
     # Return an action, typically the most frequently used action (from the root) or the action with the best
     # estimated win rate.
-    print("Vanilla bot is picking...", max_value_action.wins)
-    return max_value_action.parent_action
+
+    # Selecting the best action
+    best = None # (node)
+    for key in root_node.child_nodes.keys():
+        # Getting action data
+        next_node = root_node.child_nodes[key]
+
+        # Comparing values and assigned new best if applicable
+        if not best:
+            best = next_node
+        elif (best.wins < next_node.wins):
+            best = next_node
+        elif ((best.wins == next_node.wins) and (best.visits < next_node.visits)):
+            best = next_node
+
+    print("Vanilla bot is picking...", best.parent_action)
+    return best.parent_action
 
 
 def return_from_node(node, board, state):
