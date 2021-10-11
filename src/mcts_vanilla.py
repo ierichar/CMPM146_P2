@@ -1,3 +1,4 @@
+from sys import _current_frames
 from mcts_node import MCTSNode
 from random import choice
 from math import e, sqrt, log
@@ -6,6 +7,18 @@ import p2_t3
 
 num_nodes = 1000
 explore_faction = 2.
+
+# Allowed Interface:
+# -   board.legal_actions(state)→ returns the moves available in state.
+# -   board.next_state(state, action)→ returns a new state constructed by applying action in state.
+# -   board.is_ended(state)→ returns True if the game has ended in state and False otherwise.
+# -   board.current_player(state)→ returns the index of the current player in state.
+# -   board.points_values(state)→ returns a dictionary of the score for each player 
+#       (eg {1:-1,2:1} for a second-player win). Will return None if the game is not ended.
+# -   board.owned_boxes(state)→ returns a dict with (Row,Column) keys; values indicate for 
+#        each box whether player 1, 2, or 0 (neither) owns that box
+# -   board.display(state, action)→ returns a string representation of the board state.
+# -   board.display_action(action)→ returns a string representation of the game action.
 
 def traverse_nodes(node, board, state, identity):
     """ Traverses the tree until the end criterion are met.
@@ -19,55 +32,34 @@ def traverse_nodes(node, board, state, identity):
     Returns:        A node from which the next stage of the search can proceed.
 
     """
-    # # Go first
-    # if identity is 'red':
-    #     if node.child_nodes.empty():
-    #         return node
-    #     else:
-    #         for child_node in node.child_nodes:
-    #             max_uct_value = None
-    #             # Upper Confidence Bounds for Trees (UCT)
-    #             # w_i / n_i + c * sqrt( ln(t)/ n_i )
-    #             uct_value = ( child_node.wins/child_node.visits ) + explore_faction * (sqrt( log(node.visits, e)/ child_node.visits))
-                
-    #             # Find the maximum UCT value amongst current node's children
-    #             if max_uct_value == None:
-    #                 uct_value = max_uct_value
-    #             else:
-    #                 if uct_value > max_uct_value:
-    #                     max_uct_value = uct_value
-    # # Go second
-    # else:
-    #     # Play for minimum
-    #     return None
-
-    # Recursive Function
-    if len(node.untried_actions) == 0:
-        print("node has no untried actions")
-        return node
-    elif len(node.child_nodes) == 0:
-        print("node has no children")
-        return node
-    else:
-        max_uct_value = None
+    current_node = node
+    if len(node.child_nodes) != 0:
+        max_uct_value = float('-inf')
         best_child = None
-        for child_node in node.child_nodes:
-            # ---- RED 'X' UCT ---- (need a BLUE or 'O' UCT)
-            # Upper Confidence Bounds for Trees (UCT)
-            # w_i / n_i + c * sqrt( ln(t)/ n_i )
-            uct_value = ( child_node.wins/child_node.visits ) + explore_faction * (sqrt( log(node.visits, e)/ child_node.visits))
-            
-            # Find the maximum UCT value amongst current node's children
-            if max_uct_value == None:
-                uct_value = max_uct_value
-                best_child = child_node
+        best_action = ()
+        for key_action, child_node in node.child_nodes.items():
+            if child_node.visits == 0:
+                current_node = child_node
+                return current_node
             else:
-                if uct_value > max_uct_value:
-                    max_uct_value = uct_value
-                    best_child = child_node
-        print("traversing best node")
-        return traverse_nodes(best_child, board, state, identity)
-
+                # ---- RED 'X' and BLUE 'O' UCT ---- 
+                # Upper Confidence Bounds for Trees (UCT)
+                # w_i / n_i + c * sqrt( ln(t)/ n_i )
+                # or ( 1 - UCT )
+                print("Current Player:", board.current_player(state))
+                if board.current_player(state) is identity:
+                    uct_value = ( child_node.wins/child_node.visits ) + explore_faction * (sqrt( log(node.visits, e)/ child_node.visits))
+                else:
+                    uct_value = (1 - ( node.child_nodes[child_node].wins/node.child_nodes[child_node].visits ) + explore_faction * (sqrt( log(node.visits, e)/ node.child_nodes[child_node].visits)))
+            if uct_value > max_uct_value:
+                max_uct_value = uct_value
+                best_child = child_node
+                best_action = key_action
+        # Sets best child to current node
+        current_node = best_child
+        # Changes state of the board accordingly
+        state = board.next_state(state, best_action)
+    return current_node
     # Hint: return leaf_node
 
 
@@ -83,11 +75,10 @@ def expand_leaf(node, board, state):
 
     """
     # Select a random_action from untried_actions
-    print("adding a new node")
-    random_action = choice(node.untried_actions)
+    random_action = choice(board.legal_actions(state))
+    state = board.next_state(state, random_action)
     new_node = MCTSNode(parent=node, parent_action=random_action, action_list=board.legal_actions(state))
     node.child_nodes[random_action] = new_node
-    new_node.parent = node
 
     return new_node
     # Hint: return new_node
@@ -95,7 +86,7 @@ def expand_leaf(node, board, state):
 
 def rollout(board, state):
     """ Given the state of the game, the rollout plays out the remainder randomly.
-        Example Heuristics:
+        Example Heuristics for modified:
             -   Always connect third X/0 if possible
             -   Always block third X/0 if possible
     Args:
@@ -103,16 +94,10 @@ def rollout(board, state):
         state:  The state of the game.
 
     """
-    # RED vs BLUE simulation 
-    # Current player needs to be accounted for
-    print("autobots rollout")
     while not board.is_ended(state):
         random_action = choice(board.legal_actions(state))
-        print("action is", random_action)
-        board.next_state(state, random_action)
-
-    return board.win_values(state)
-
+        state = board.next_state(state, random_action)
+    return board.points_values(state)
 
 
 def backpropagate(node, won):
@@ -123,11 +108,10 @@ def backpropagate(node, won):
         won:    An indicator of whether the bot won or lost the game.
 
     """
-    print("backpropagate")
+    node.wins += won
+    node.visits += 1
     if node.parent is None:
         return
-    node.wins += won
-    node.visit += 1
     backpropagate(node.parent, won)
 
 
@@ -145,9 +129,9 @@ def think(board, state):
     identity_of_bot = board.current_player(state)
     root_node = MCTSNode(parent=None, parent_action=None, action_list=board.legal_actions(state))
 
-    highest_value = None
-    best_action = None
+    value_dictionary = {}
     for step in range(num_nodes):
+        print("step:", step)
         # Copy the game for sampling a playthrough
         sampled_game = state
 
@@ -156,24 +140,19 @@ def think(board, state):
 
         # Do MCTS - This is all you!
         # Selection
-        leaf = traverse_nodes(node, board, sampled_game, identity_of_bot)
+        node = traverse_nodes(node, board, sampled_game, identity_of_bot)
         # Expansion
-        expand_leaf(leaf, board, sampled_game)
+        leaf = expand_leaf(node, board, sampled_game)
+        sampled_game = board.next_state(sampled_game, leaf.parent_action)
         # Simulation
         won = rollout(board, sampled_game)
         # Backpropagation
-        backpropagate(leaf, won)
+        backpropagate(node, won[identity_of_bot])
 
-        if highest_value == None:
-            highest_value = won
-            best_action = leaf
-        else:
-            if won > highest_value:
-                highest_value = won
-                best_action = leaf
-
+        value_dictionary[node] = node.wins
+        max_value_action = max(value_dictionary, key=value_dictionary.get)
 
     # Return an action, typically the most frequently used action (from the root) or the action with the best
     # estimated win rate.
-    print("Vanilla bot is picking...")
-    return best_action
+    print("Vanilla bot is picking...", max_value_action.wins)
+    return max_value_action
