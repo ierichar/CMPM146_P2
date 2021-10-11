@@ -225,7 +225,7 @@ def think(board, state):
     # END ===============================================================
 
     # for step in range(num_nodes):
-    for step in range(30): # Testing purposes
+    for step in range(1): # Testing purposes
         print('Step: ', step, '/', num_nodes)
         # Copy the game for sampling a playthrough
         sampled_game = state
@@ -236,11 +236,11 @@ def think(board, state):
         # Do MCTS - This is all you!
 
         # Getting leaf_node
-        #leaf_node = traverse_nodes(node, board, sampled_game, identity_of_bot)
+        leaf_node = traverse_nodes(node, board, sampled_game, identity_of_bot)
         #print('traversal results parent: ', leaf_node.parent_action)
 
         # Adding to leaf_node
-        #new_node = expand_leaf(leaf_node, board, state)
+        new_node = expand_leaf(leaf_node, board, sampled_game)
         #print('exapansion results parent: ', new_node.parent_action)
 
         # Playing out game from the leaf node
@@ -249,6 +249,20 @@ def think(board, state):
         # Backtracking from the terminal node to the root node
         # backpropagate(node, won)
 
+    # Selecting the best action
+    best = None # (node)
+    for key in node.child_nodes.keys():
+        # Getting action data
+        next_state = node.child_nodes[key]
+        print(key)
+
+        # Comparing values and assigned new best if applicable
+        if not best:
+            best = next_state
+        elif (best.wins < next_state.wins):
+            best = next_state
+        elif ((best.wins == next_state.wins) and (best.visits < next_state.visits)):
+            best = next_state
     # Return an action, typically the most frequently used action (from the root) or the action with the best
     # estimated win rate.
-    return None
+    return best
