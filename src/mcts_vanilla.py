@@ -264,11 +264,11 @@ def think(board, state):
     if (identity_of_bot == 1):
         count = 100
     else:
-        count = 100
+        count = 50
     # print('Player: ', identity_of_bot, ' count: ', count)
     for step in range(count):
         start = time()
-        print('New Loop\nStart time: ', start)
+        # print('New Loop\nStart time: ', start)
         #print("step:", step)
         # Copy the game for sampling a playthrough
         sampled_game = state
@@ -282,7 +282,7 @@ def think(board, state):
 
         # node = None means no more actions untested which means end the search
         if not node:
-            print('No node found, step: ', step)
+            # print('No node found, step: ', step)
             break
 
         # Expansion
@@ -304,8 +304,8 @@ def think(board, state):
 
         # Checking max time
         time_elapsed = time() - start
-        print('End time: ', time())
-        print('TIme elapsed: ', time_elapsed)
+        # print('End time: ', time())
+        # print('TIme elapsed: ', time_elapsed)
         if (time_elapsed > 1):
             break
 
