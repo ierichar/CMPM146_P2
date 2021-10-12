@@ -296,12 +296,14 @@ def think(board, state):
             break
         actions_to_leaf = return_from_node(node, board, sampled_game)
         actions_to_leaf.reverse()
-        leaf = expand_leaf(node, board, sampled_game)
-        actions_to_leaf.append(leaf.parent_action)
+        new_state = get_state_from_path(board, sampled_game, actions_to_leaf)
+        
+        leaf = expand_leaf(node, board, new_state)
+        new_state = board.next_state(new_state, leaf.parent_action)
         #print(board.display(sampled_game, leaf.parent_action))
         #print(actions_to_leaf)
         # Simulation
-        won = rollout(board, get_state_from_path(board, sampled_game, actions_to_leaf))
+        won = rollout(board, new_state)
         # Backpropagation
         backpropagate(leaf, won[identity_of_bot])
 
