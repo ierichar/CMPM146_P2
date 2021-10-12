@@ -2,6 +2,7 @@ from sys import _current_frames
 from mcts_node import MCTSNode
 from random import choice
 from math import e, sqrt, log
+from timeit import default_timer as time
 
 import p2_t3
 
@@ -120,6 +121,7 @@ def traverse_nodes(node, board, state, identity):
             minmax = pow(-1, modifier + package[1])
             # Applying modifier
             utc *= minmax
+
             #print('UTC after min/max: ', utc)
             #print('min/max: ', minmax)
             """
@@ -265,6 +267,8 @@ def think(board, state):
         count = 100
     # print('Player: ', identity_of_bot, ' count: ', count)
     for step in range(count):
+        start = time()
+        print('New Loop\nStart time: ', start)
         #print("step:", step)
         # Copy the game for sampling a playthrough
         sampled_game = state
@@ -297,6 +301,14 @@ def think(board, state):
         backpropagate(leaf, won[identity_of_bot])
 
         #print(max_value_action.parent_action)
+
+        # Checking max time
+        time_elapsed = time() - start
+        print('End time: ', time())
+        print('TIme elapsed: ', time_elapsed)
+        if (time_elapsed > 1):
+            break
+
 
     # Return an action, typically the most frequently used action (from the root) or the action with the best
     # estimated win rate.
