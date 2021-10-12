@@ -220,20 +220,30 @@ def rollout(board, state):
         state:  The state of the game.
 
     """
+    #print("rolling out")
     while not board.is_ended(state):
 
         # Finding heuristics
-        wins = find_wins(board, state)
-        blocks = find_blocks(board, state)
+        wins = (find_wins(board, state))
+        blocks = (find_blocks(board, state))
 
         # Determining action
-        action = None
-        if (len(wins) > 0):
-            action = wins.pop()
-        elif (len(blocks) > 0):
-            action = blocks.pop()
-        else:
-            action = choice(board.legal_actions(state))
+        action = choice(board.legal_actions(state))
+        action_list = list(action)
+        if wins is not None:
+            action_list[2] = wins[0]
+            action_list[3] = wins[1]
+            action = tuple(action_list)
+            #print("found winning action:", action)
+        elif blocks is not None:
+            action_list[2] = blocks[0]
+            action_list[3] = blocks[1]
+            action = tuple(action_list)
+            #print("found blocking action:", action)
+        #print("legal actions:", board.legal_actions(state))
+        if action not in board.legal_actions(state):
+            action = action = choice(board.legal_actions(state))
+        #print("eventual action:", action)
 
         state = board.next_state(state, action)
     return board.points_values(state)
@@ -267,7 +277,7 @@ def think(board, state):
     """
     identity_of_bot = board.current_player(state)
     root_node = MCTSNode(parent=None, parent_action=None, action_list=board.legal_actions(state))
-    print('Action selection list', root_node.untried_actions)
+    #print('Action selection list', root_node.untried_actions)
 
     value_dictionary = {}
     for step in range(num_nodes):
@@ -282,6 +292,8 @@ def think(board, state):
         # Selection
         node = traverse_nodes(node, board, sampled_game, identity_of_bot)
         # Expansion
+        if node is None:
+            break
         actions_to_leaf = return_from_node(node, board, sampled_game)
         actions_to_leaf.reverse()
         leaf = expand_leaf(node, board, sampled_game)
@@ -315,13 +327,13 @@ def think(board, state):
         elif ((best.wins == next_node.wins) and (best.visits < next_node.visits)):
             best = next_node
 
-    print("Vanilla bot is picking...", best.parent_action)
+    #print("Modified bot is picking...", best.parent_action)
     return best.parent_action
 
 
 def return_from_node(node, board, state):
     # Helper function: returns a list of nodes to get to current leaf
-    if node.parent == None:
+    if node.parent is None:
         return []
     return return_from_node(node.parent, board, state) + [node.parent_action]
 
@@ -337,36 +349,60 @@ def get_state_from_path(board, state, path_list):
     return final_state
 
 def find_wins(board, state):
+    # args: board, state
+    # return: (x, y) tuple -> the position to win the board state
+    # if no position that meets criteria, return None
     ownership = board.owned_boxes(state) # [][] -> 1, 2, 0
-    current_player = board.current_player(state)
-    # Scratch Work !!!
-    # box1 = None
-    # box2 = None
-    # for x in range(3):
-    #     for y in range(3):
-    #         if (ownership[x][y] == 1):
-    #             box1 = x, y
-    # for x in range(3):
-    #     for y in range(3):
-    #         if (ownership[x][y] == 1):
-    #             box2 = x, y
-    #                 if box1 != None and box2 != None:
-    #                     if box1[0] == box2[0]:
-    #                         if box1[1] + box2[1] == 1:
-    #                             return box1[0], 2
-    #                         elif box1[1] + box2[1] == 2:
-    #                             return box1[0], 1
-    #                         else:
-    #                             return box1[0], 0
-    #                     elif box1[1] == box2[1]:
-    #                         if box1[0] + box2[0] == 1:
-    #                             return 2, box1[1]
-    #                         elif box1[0] + box2[0] == 2:
-    #                             return 1, box1[1]
-    #                         else:
-    #                             return 0, box1[1]
-    #                     else:
-    #                         if box1 == (2, 0):
+    my_player = board.current_player(state)
+    #print("ownership:", ownership)
+    #print("my_player:", my_player)
+    box1 = None
+    box2 = None
+    for a in range(3):
+        for b in range(3):
+            # potential change to include 1 or 2 in same loop for efficiency
+            if (ownership[a, b] == my_player):
+                box1 = a, b
+                for x in range(3):
+                    for y in range(3):
+                        # potential change to include 1 or 2 in same loop for efficiency
+                        if (ownership[x, y] == my_player):
+                            box2 = x, y
+                            if box1 is not None and box2 is not None and box1 != box2:
+                                # Handle horizontals
+                                if box1[0] == box2[0]:
+                                    y_sum = box1[1] + box2[1]
+                                    if y_sum == 1: 
+                                        if ownership[box1[0], 2] == 0: 
+                                            return box1[0], 2
+                                    if y_sum == 2:
+                                        if ownership[box1[0], 1] == 0: 
+                                            return box1[0], 1
+                                    if y_sum == 3:
+                                        if ownership[box1[0], 0] == 0: 
+                                            return box1[0], 0
+                                # Handle verticals
+                                elif box1[1] == box2[1]:
+                                    x_sum = box1[0] + box2[0]
+                                    if x_sum == 1: 
+                                        if ownership[2, box1[1]] == 0: 
+                                            return 2, box1[1]
+                                    if x_sum == 2: 
+                                        if ownership[1, box1[1]] == 0: 
+                                            return 1, box1[1]
+                                    if x_sum == 3: 
+                                        if ownership[0, box1[1]] == 0: 
+                                            return 0, box1[1]
+                                # Handle diagonals
+                                else:
+                                    x_y_sum = box1 + box2
+                                    if x_y_sum == (3, 3): return 0, 0
+                                    if x_y_sum == (2, 2): return 1, 1
+                                    if x_y_sum == (1, 1): return 2, 2
+                                    if x_y_sum == (1, 3): return 0, 2
+                                    if x_y_sum == (3, 1): return 2, 0
+    
+    return None
 
     # p1 = []
     # p2 = []
@@ -388,7 +424,59 @@ def find_wins(board, state):
     # if len(p2) > 1:
     #     for box in p1: # (x, y)
     #         continue
-    pass
 
 def find_blocks(board, state):
-    pass
+    # args: board, state
+    # return: (x, y) tuple -> the position to win the board state
+    # if no position that meets criteria, return None
+    ownership = board.owned_boxes(state) # [][] -> 1, 2, 0
+    my_player = board.current_player(state)
+    #print("ownership:", ownership)
+    #print("my_player:", my_player)
+    box1 = None
+    box2 = None
+    for a in range(3):
+        for b in range(3):
+            # potential change to include 1 or 2 in same loop for efficiency
+            if (ownership[a, b] != my_player and ownership[a, b] != 0):
+                box1 = a, b
+                for x in range(3):
+                    for y in range(3):
+                        # potential change to include 1 or 2 in same loop for efficiency
+                        if (ownership[x, y] != my_player and ownership[x, y] != 0):
+                            box2 = x, y
+                            if box1 is not None and box2 is not None and box1 != box2:
+                                # Handle horizontals
+                                if box1[0] == box2[0]:
+                                    y_sum = box1[1] + box2[1]
+                                    if y_sum == 1: 
+                                        if ownership[box1[0], 2] == 0: 
+                                            return box1[0], 2
+                                    if y_sum == 2:
+                                        if ownership[box1[0], 1] == 0: 
+                                            return box1[0], 1
+                                    if y_sum == 3:
+                                        if ownership[box1[0], 0] == 0: 
+                                            return box1[0], 0
+                                # Handle verticals
+                                elif box1[1] == box2[1]:
+                                    x_sum = box1[0] + box2[0]
+                                    if x_sum == 1: 
+                                        if ownership[2, box1[1]] == 0: 
+                                            return 2, box1[1]
+                                    if x_sum == 2: 
+                                        if ownership[1, box1[1]] == 0: 
+                                            return 1, box1[1]
+                                    if x_sum == 3: 
+                                        if ownership[0, box1[1]] == 0: 
+                                            return 0, box1[1]
+                                # Handle diagonals
+                                else:
+                                    x_y_sum = box1 + box2
+                                    if x_y_sum == (3, 3): return 0, 0
+                                    if x_y_sum == (2, 2): return 1, 1
+                                    if x_y_sum == (1, 1): return 2, 2
+                                    if x_y_sum == (1, 3): return 0, 2
+                                    if x_y_sum == (3, 1): return 2, 0
+    
+    return None

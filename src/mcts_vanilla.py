@@ -5,7 +5,7 @@ from math import e, sqrt, log
 
 import p2_t3
 
-num_nodes = 1000
+num_nodes = 100
 explore_faction = 2.
 
 # Allowed Interface:
@@ -254,7 +254,7 @@ def think(board, state):
     """
     identity_of_bot = board.current_player(state)
     root_node = MCTSNode(parent=None, parent_action=None, action_list=board.legal_actions(state))
-    print('Action selection list', root_node.untried_actions)
+    #print('Action selection list', root_node.untried_actions)
 
     value_dictionary = {}
     for step in range(num_nodes):
@@ -269,6 +269,8 @@ def think(board, state):
         # Selection
         node = traverse_nodes(node, board, sampled_game, identity_of_bot)
         # Expansion
+        if node is None:
+            break
         actions_to_leaf = return_from_node(node, board, sampled_game)
         actions_to_leaf.reverse()
         leaf = expand_leaf(node, board, sampled_game)
@@ -302,13 +304,13 @@ def think(board, state):
         elif ((best.wins == next_node.wins) and (best.visits < next_node.visits)):
             best = next_node
 
-    print("Vanilla bot is picking...", best.parent_action)
+    #print("Vanilla bot is picking...", best.parent_action)
     return best.parent_action
 
 
 def return_from_node(node, board, state):
     # Helper function: returns a list of nodes to get to current leaf
-    if node.parent == None:
+    if node.parent is None:
         return []
     return return_from_node(node.parent, board, state) + [node.parent_action]
 
