@@ -1,0 +1,8 @@
+Experiment 3 - Time as a Constraint
+
+Final win counts: {'draw': 34, 1: 31, 2: 35}
+293.7878007  seconds
+
+With our experiment on both trees, the modified tree is smaller than the vanilla.
+We think that it is due to the introduction of heuristics into our rollout funciton.
+With different time limits, the longer you give the heuristic-using bot, the better results it should produce so it can narrow down better selections

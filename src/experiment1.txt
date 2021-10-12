@@ -1,0 +1,11 @@
+Experiment 1 - Tree Size
+
+Result of each variation of tree size against a 100 num_node mcts_vanilla:
+Results for Van(100) vs Van(50): {'draw': 24, 1: 42, 2: 34}
+Results for Van(100) vs Van(100) {'draw': 27, 1: 29, 2: 44}
+Results for Van(100) vs Van(150):: {'draw': 24, 1: 44, 2: 32}
+Results for Van(100) vs Van(200) {'draw': 23, 1: 46, 2: 31}
+
+Are results where inconsistent to the theory that suggests given the same
+computation time, the MCTS with more nodes should give a more precise value
+through comparing Upper Confidence Bound Tree values.

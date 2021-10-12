@@ -1,0 +1,12 @@
+Experiment 2 - Heuristic Improvement
+
+num_nodes set to 100 for mcts_vanilla and mcts_modified
+Final win counts: {'draw': 14, 1: 38, 2: 48}
+522.9741766  seconds
+
+The modified MCTS (player 2 in sample) bot does win more games than the vanilla
+MCTS bot out of 100 games played.
+Yes, the more trees the modified bot has over the vanilla bot, 
+the better values it will be able to find while expanding its tree.
+Increasing the tree size should help modified win more given the same time to
+take its turn due to its heuristic application to narrow down better choices.
