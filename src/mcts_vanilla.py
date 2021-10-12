@@ -258,8 +258,13 @@ def think(board, state):
     root_node = MCTSNode(parent=None, parent_action=None, action_list=board.legal_actions(state))
     # print('Action selection list', root_node.untried_actions)
 
-    value_dictionary = {}
-    for step in range(num_nodes):
+    count = None
+    if (identity_of_bot == 1):
+        count = 100
+    else:
+        count = 100
+    # print('Player: ', identity_of_bot, ' count: ', count)
+    for step in range(count):
         #print("step:", step)
         # Copy the game for sampling a playthrough
         sampled_game = state
@@ -273,24 +278,23 @@ def think(board, state):
 
         # node = None means no more actions untested which means end the search
         if not node:
+            print('No node found, step: ', step)
             break
 
         # Expansion
-        if node is None:
-            break
         actions_to_leaf = return_from_node(node, board, sampled_game)
         actions_to_leaf.reverse()
-        leaf = expand_leaf(node, board, sampled_game)
-        actions_to_leaf.append(leaf.parent_action)
+        new_state = get_state_from_path(board, sampled_game, actions_to_leaf)
+        
+        leaf = expand_leaf(node, board, new_state)
+        new_state = board.next_state(new_state, leaf.parent_action)
+        
         #print(board.display(sampled_game, leaf.parent_action))
         #print(actions_to_leaf)
         # Simulation
-        won = rollout(board, get_state_from_path(board, sampled_game, actions_to_leaf))
+        won = rollout(board, new_state)
         # Backpropagation
         backpropagate(leaf, won[identity_of_bot])
-
-        value_dictionary[node] = node.wins
-        max_value_action = max(value_dictionary, key=value_dictionary.get)
 
         #print(max_value_action.parent_action)
 
